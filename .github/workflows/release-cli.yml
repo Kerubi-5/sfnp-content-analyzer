@@ -1,0 +1,20 @@
+name: Release CLI
+
+# Publishes sfnp-content-analyzer to npm on main when its source changes. Thin caller — the
+# publish/bump job lives in constellation-kit. No NPM_TOKEN is passed, so it
+# publishes via OIDC trusted publishing (configured on npm for sfnp-content-analyzer,
+# pointing at this repo + release-cli.yml). See the reusable workflow for the
+# publish-first-then-bump rationale.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  release:
+    permissions:
+      contents: write
+      id-token: write
+    uses: Kerubi-5/constellation-kit/.github/workflows/release-cli.yml@main
+    with:
+      package: sfnp-content-analyzer
