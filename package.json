@@ -1,6 +1,6 @@
 {
   "name": "sfnp-content-analyzer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Content, sentiment, and lead-generation opportunity analyzer for Sales For Nice People (SFNP)",
   "type": "module",
   "packageManager": "pnpm@11.1.2",
