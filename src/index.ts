@@ -30,7 +30,7 @@ export function analyzeContent(input: AnalyzeInput): AnalysisResult {
     'click', 'sign up', 'subscribe', 'download', 'join', 
     'newsletter', 'opt-in', 'optin', 'register', 'buy', 'order'
   ];
-  const hasCTA = ctaKeywords.some(keyword => lowerBody.includes(ctaKeywords[0])); // simple check
+  const hasCTA = ctaKeywords.some(keyword => lowerBody.includes(keyword)); // simple check
 
   // 2. Sentiment/Urgency Analysis
   let positiveScore = 0;

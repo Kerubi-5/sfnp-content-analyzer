@@ -42,7 +42,7 @@ function analyzeContent(input) {
     "buy",
     "order"
   ];
-  const hasCTA = ctaKeywords.some((keyword) => lowerBody.includes(ctaKeywords[0]));
+  const hasCTA = ctaKeywords.some((keyword) => lowerBody.includes(keyword));
   let positiveScore = 0;
   let negativeScore = 0;
   const positiveWords = ["ethical", "generosity", "symbiosis", "value", "trust", "help", "growth", "succeed", "nice"];
