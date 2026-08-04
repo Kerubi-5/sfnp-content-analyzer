@@ -2,6 +2,10 @@
   "name": "sfnp-content-analyzer",
   "version": "0.1.1",
   "description": "Content, sentiment, and lead-generation opportunity analyzer for Sales For Nice People (SFNP)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Kerubi-5/sfnp-content-analyzer"
+  },
   "type": "module",
   "packageManager": "pnpm@11.1.2",
   "pnpm": {
