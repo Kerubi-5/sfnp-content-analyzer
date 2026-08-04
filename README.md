@@ -39,3 +39,14 @@ Output:
 }
 */
 ```
+
+## Development
+
+```bash
+pnpm install
+pnpm test        # vitest suite for analyzeContent
+pnpm run build
+pnpm run typecheck
+```
+
+Heuristic changes for SFNP opportunity scoring belong in this package — consumers (Obsidian plugin, WordPress, etc.) should depend on it rather than copying `analyzeContent`.

@@ -1,6 +1,6 @@
 // src/index.ts
 function analyzeContent(input) {
-  const { title, body, tags = [], frontmatter = {} } = input;
+  const { title, body, tags = [] } = input;
   const lowerBody = body.toLowerCase();
   const lowerTitle = title.toLowerCase();
   const reasons = [];

@@ -2,7 +2,8 @@ export interface AnalyzeInput {
   title: string;
   body: string;
   tags?: string[];
-  frontmatter?: Record<string, any>;
+  /** Optional note metadata; reserved for future heuristic signals. */
+  frontmatter?: Record<string, unknown>;
 }
 
 export interface AnalysisResult {
@@ -19,20 +20,18 @@ export interface AnalysisResult {
  * Analyzes copy to find lead generation and internal linking opportunities.
  */
 export function analyzeContent(input: AnalyzeInput): AnalysisResult {
-  const { title, body, tags = [], frontmatter = {} } = input;
+  const { title, body, tags = [] } = input;
   const lowerBody = body.toLowerCase();
   const lowerTitle = title.toLowerCase();
   const reasons: string[] = [];
   const suggestedLeadMagnets: string[] = [];
 
-  // 1. CTA Detection
   const ctaKeywords = [
-    'click', 'sign up', 'subscribe', 'download', 'join', 
+    'click', 'sign up', 'subscribe', 'download', 'join',
     'newsletter', 'opt-in', 'optin', 'register', 'buy', 'order'
   ];
-  const hasCTA = ctaKeywords.some(keyword => lowerBody.includes(keyword)); // simple check
+  const hasCTA = ctaKeywords.some(keyword => lowerBody.includes(keyword));
 
-  // 2. Sentiment/Urgency Analysis
   let positiveScore = 0;
   let negativeScore = 0;
 
@@ -52,11 +51,10 @@ export function analyzeContent(input: AnalyzeInput): AnalysisResult {
       ? 'negative' 
       : 'neutral';
 
-  // 3. Opportunity/Lead-Scoring Heuristics
+  // Longer content has more depth, therefore higher lead magnet potential
   const wordCount = body.split(/\s+/).filter(Boolean).length;
   let leadScore = 0;
 
-  // Longer content has more depth, therefore higher lead magnet potential
   if (wordCount > 1000) {
     leadScore += 40;
     reasons.push(`High word count (${wordCount} words) is excellent for a deep-dive checklist.`);
@@ -76,7 +74,6 @@ export function analyzeContent(input: AnalyzeInput): AnalysisResult {
     reasons.push('Existing CTA found, but could be enhanced with a specialized download.');
   }
 
-  // Check for brand/domain match
   if (tags.includes('sales') || lowerTitle.includes('sales') || lowerBody.includes('selling')) {
     leadScore += 15;
     suggestedLeadMagnets.push('Ethical Sales Checklist');
@@ -93,7 +90,6 @@ export function analyzeContent(input: AnalyzeInput): AnalysisResult {
     reasons.push('Focuses on audience reach and list-building bottlenecks.');
   }
 
-  // Cap lead score at 100
   leadScore = Math.min(100, leadScore);
 
   const urgency = leadScore > 75 

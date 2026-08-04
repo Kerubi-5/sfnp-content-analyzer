@@ -2,7 +2,8 @@ interface AnalyzeInput {
     title: string;
     body: string;
     tags?: string[];
-    frontmatter?: Record<string, any>;
+    /** Optional note metadata; reserved for future heuristic signals. */
+    frontmatter?: Record<string, unknown>;
 }
 interface AnalysisResult {
     sentiment: 'positive' | 'neutral' | 'negative';
