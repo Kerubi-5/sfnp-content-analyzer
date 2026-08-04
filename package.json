@@ -29,13 +29,16 @@
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --clean --dts",
     "dev": "tsup src/index.ts --format cjs,esm --clean --dts --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "engines": {
     "node": ">=20"
   },
   "devDependencies": {
     "tsup": "^8.5.0",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^3.2.7"
   }
 }

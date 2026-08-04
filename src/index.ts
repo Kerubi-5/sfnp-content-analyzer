@@ -2,7 +2,8 @@ export interface AnalyzeInput {
   title: string;
   body: string;
   tags?: string[];
-  frontmatter?: Record<string, any>;
+  /** Optional note metadata; reserved for future heuristic signals. */
+  frontmatter?: Record<string, unknown>;
 }
 
 export interface AnalysisResult {
@@ -14,49 +15,78 @@ export interface AnalysisResult {
   hasCTA: boolean;
 }
 
+const CTA_KEYWORDS = [
+  'click', 'sign up', 'subscribe', 'download', 'join',
+  'newsletter', 'opt-in', 'optin', 'register', 'buy', 'order',
+];
+
+const POSITIVE_WORDS = [
+  'ethical', 'generosity', 'symbiosis', 'value', 'trust', 'help', 'growth', 'succeed', 'nice',
+];
+
+const NEGATIVE_WORDS = [
+  'extractive', 'stagnant', 'broken', 'predatory', 'forced', 'trick', 'pressure', 'bottleneck',
+];
+
+const TOPIC_RULES: Array<{
+  tag: string;
+  titleNeedle: string;
+  bodyNeedle: string;
+  magnet: string;
+  reason: string;
+}> = [
+  {
+    tag: 'sales',
+    titleNeedle: 'sales',
+    bodyNeedle: 'selling',
+    magnet: 'Ethical Sales Checklist',
+    reason: 'Topic maps strongly to SFNP sales principles.',
+  },
+  {
+    tag: 'copywriting',
+    titleNeedle: 'copywriting',
+    bodyNeedle: 'copy',
+    magnet: 'Non-Manipulative Copywriting Template',
+    reason: 'Topic maps strongly to copywriting/conversion psychology.',
+  },
+  {
+    tag: 'newsletter',
+    titleNeedle: 'newsletter',
+    bodyNeedle: 'email',
+    magnet: 'Email List Growth Speedrun Guide',
+    reason: 'Focuses on audience reach and list-building bottlenecks.',
+  },
+];
+
+function countMatches(text: string, words: string[]): number {
+  return words.reduce((count, word) => (text.includes(word) ? count + 1 : count), 0);
+}
+
 /**
- * Pure-JS/TS Sentiment and Content Analyzer for SFNP.
- * Analyzes copy to find lead generation and internal linking opportunities.
+ * Pure-JS/TS sentiment and content analyzer for SFNP.
+ * Finds lead-generation and internal-linking opportunities from copy.
  */
 export function analyzeContent(input: AnalyzeInput): AnalysisResult {
-  const { title, body, tags = [], frontmatter = {} } = input;
+  const { title, body, tags = [] } = input;
   const lowerBody = body.toLowerCase();
   const lowerTitle = title.toLowerCase();
   const reasons: string[] = [];
   const suggestedLeadMagnets: string[] = [];
 
-  // 1. CTA Detection
-  const ctaKeywords = [
-    'click', 'sign up', 'subscribe', 'download', 'join', 
-    'newsletter', 'opt-in', 'optin', 'register', 'buy', 'order'
-  ];
-  const hasCTA = ctaKeywords.some(keyword => lowerBody.includes(keyword)); // simple check
+  const hasCTA = CTA_KEYWORDS.some((keyword) => lowerBody.includes(keyword));
 
-  // 2. Sentiment/Urgency Analysis
-  let positiveScore = 0;
-  let negativeScore = 0;
+  const positiveScore = countMatches(lowerBody, POSITIVE_WORDS);
+  const negativeScore = countMatches(lowerBody, NEGATIVE_WORDS);
+  const sentiment =
+    positiveScore > negativeScore
+      ? 'positive'
+      : negativeScore > positiveScore
+        ? 'negative'
+        : 'neutral';
 
-  const positiveWords = ['ethical', 'generosity', 'symbiosis', 'value', 'trust', 'help', 'growth', 'succeed', 'nice'];
-  const negativeWords = ['extractive', 'stagnant', 'broken', 'predatory', 'forced', 'trick', 'pressure', 'bottleneck'];
-
-  positiveWords.forEach(word => {
-    if (lowerBody.includes(word)) positiveScore++;
-  });
-  negativeWords.forEach(word => {
-    if (lowerBody.includes(word)) negativeScore++;
-  });
-
-  const sentiment = positiveScore > negativeScore 
-    ? 'positive' 
-    : negativeScore > positiveScore 
-      ? 'negative' 
-      : 'neutral';
-
-  // 3. Opportunity/Lead-Scoring Heuristics
   const wordCount = body.split(/\s+/).filter(Boolean).length;
   let leadScore = 0;
 
-  // Longer content has more depth, therefore higher lead magnet potential
   if (wordCount > 1000) {
     leadScore += 40;
     reasons.push(`High word count (${wordCount} words) is excellent for a deep-dive checklist.`);
@@ -68,7 +98,6 @@ export function analyzeContent(input: AnalyzeInput): AnalysisResult {
     reasons.push('Short post. Consider expanding to capture leads.');
   }
 
-  // If it lacks a clear call to action, it's a massive missed opportunity!
   if (!hasCTA) {
     leadScore += 35;
     reasons.push('No call-to-action (CTA) detected. Adding a lead magnet is high leverage here.');
@@ -76,31 +105,21 @@ export function analyzeContent(input: AnalyzeInput): AnalysisResult {
     reasons.push('Existing CTA found, but could be enhanced with a specialized download.');
   }
 
-  // Check for brand/domain match
-  if (tags.includes('sales') || lowerTitle.includes('sales') || lowerBody.includes('selling')) {
-    leadScore += 15;
-    suggestedLeadMagnets.push('Ethical Sales Checklist');
-    reasons.push('Topic maps strongly to SFNP sales principles.');
-  }
-  if (tags.includes('copywriting') || lowerTitle.includes('copywriting') || lowerBody.includes('copy')) {
-    leadScore += 15;
-    suggestedLeadMagnets.push('Non-Manipulative Copywriting Template');
-    reasons.push('Topic maps strongly to copywriting/conversion psychology.');
-  }
-  if (tags.includes('newsletter') || lowerTitle.includes('newsletter') || lowerBody.includes('email')) {
-    leadScore += 15;
-    suggestedLeadMagnets.push('Email List Growth Speedrun Guide');
-    reasons.push('Focuses on audience reach and list-building bottlenecks.');
+  for (const rule of TOPIC_RULES) {
+    if (
+      tags.includes(rule.tag) ||
+      lowerTitle.includes(rule.titleNeedle) ||
+      lowerBody.includes(rule.bodyNeedle)
+    ) {
+      leadScore += 15;
+      suggestedLeadMagnets.push(rule.magnet);
+      reasons.push(rule.reason);
+    }
   }
 
-  // Cap lead score at 100
   leadScore = Math.min(100, leadScore);
 
-  const urgency = leadScore > 75 
-    ? 'high' 
-    : leadScore > 40 
-      ? 'medium' 
-      : 'low';
+  const urgency = leadScore > 75 ? 'high' : leadScore > 40 ? 'medium' : 'low';
 
   return {
     sentiment,
@@ -108,6 +127,6 @@ export function analyzeContent(input: AnalyzeInput): AnalysisResult {
     urgency,
     reasons,
     suggestedLeadMagnets,
-    hasCTA
+    hasCTA,
   };
 }
