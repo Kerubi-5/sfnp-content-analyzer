@@ -23,36 +23,75 @@ __export(index_exports, {
   analyzeContent: () => analyzeContent
 });
 module.exports = __toCommonJS(index_exports);
+var CTA_KEYWORDS = [
+  "click",
+  "sign up",
+  "subscribe",
+  "download",
+  "join",
+  "newsletter",
+  "opt-in",
+  "optin",
+  "register",
+  "buy",
+  "order"
+];
+var POSITIVE_WORDS = [
+  "ethical",
+  "generosity",
+  "symbiosis",
+  "value",
+  "trust",
+  "help",
+  "growth",
+  "succeed",
+  "nice"
+];
+var NEGATIVE_WORDS = [
+  "extractive",
+  "stagnant",
+  "broken",
+  "predatory",
+  "forced",
+  "trick",
+  "pressure",
+  "bottleneck"
+];
+var TOPIC_RULES = [
+  {
+    tag: "sales",
+    titleNeedle: "sales",
+    bodyNeedle: "selling",
+    magnet: "Ethical Sales Checklist",
+    reason: "Topic maps strongly to SFNP sales principles."
+  },
+  {
+    tag: "copywriting",
+    titleNeedle: "copywriting",
+    bodyNeedle: "copy",
+    magnet: "Non-Manipulative Copywriting Template",
+    reason: "Topic maps strongly to copywriting/conversion psychology."
+  },
+  {
+    tag: "newsletter",
+    titleNeedle: "newsletter",
+    bodyNeedle: "email",
+    magnet: "Email List Growth Speedrun Guide",
+    reason: "Focuses on audience reach and list-building bottlenecks."
+  }
+];
+function countMatches(text, words) {
+  return words.reduce((count, word) => text.includes(word) ? count + 1 : count, 0);
+}
 function analyzeContent(input) {
   const { title, body, tags = [] } = input;
   const lowerBody = body.toLowerCase();
   const lowerTitle = title.toLowerCase();
   const reasons = [];
   const suggestedLeadMagnets = [];
-  const ctaKeywords = [
-    "click",
-    "sign up",
-    "subscribe",
-    "download",
-    "join",
-    "newsletter",
-    "opt-in",
-    "optin",
-    "register",
-    "buy",
-    "order"
-  ];
-  const hasCTA = ctaKeywords.some((keyword) => lowerBody.includes(keyword));
-  let positiveScore = 0;
-  let negativeScore = 0;
-  const positiveWords = ["ethical", "generosity", "symbiosis", "value", "trust", "help", "growth", "succeed", "nice"];
-  const negativeWords = ["extractive", "stagnant", "broken", "predatory", "forced", "trick", "pressure", "bottleneck"];
-  positiveWords.forEach((word) => {
-    if (lowerBody.includes(word)) positiveScore++;
-  });
-  negativeWords.forEach((word) => {
-    if (lowerBody.includes(word)) negativeScore++;
-  });
+  const hasCTA = CTA_KEYWORDS.some((keyword) => lowerBody.includes(keyword));
+  const positiveScore = countMatches(lowerBody, POSITIVE_WORDS);
+  const negativeScore = countMatches(lowerBody, NEGATIVE_WORDS);
   const sentiment = positiveScore > negativeScore ? "positive" : negativeScore > positiveScore ? "negative" : "neutral";
   const wordCount = body.split(/\s+/).filter(Boolean).length;
   let leadScore = 0;
@@ -72,20 +111,12 @@ function analyzeContent(input) {
   } else {
     reasons.push("Existing CTA found, but could be enhanced with a specialized download.");
   }
-  if (tags.includes("sales") || lowerTitle.includes("sales") || lowerBody.includes("selling")) {
-    leadScore += 15;
-    suggestedLeadMagnets.push("Ethical Sales Checklist");
-    reasons.push("Topic maps strongly to SFNP sales principles.");
-  }
-  if (tags.includes("copywriting") || lowerTitle.includes("copywriting") || lowerBody.includes("copy")) {
-    leadScore += 15;
-    suggestedLeadMagnets.push("Non-Manipulative Copywriting Template");
-    reasons.push("Topic maps strongly to copywriting/conversion psychology.");
-  }
-  if (tags.includes("newsletter") || lowerTitle.includes("newsletter") || lowerBody.includes("email")) {
-    leadScore += 15;
-    suggestedLeadMagnets.push("Email List Growth Speedrun Guide");
-    reasons.push("Focuses on audience reach and list-building bottlenecks.");
+  for (const rule of TOPIC_RULES) {
+    if (tags.includes(rule.tag) || lowerTitle.includes(rule.titleNeedle) || lowerBody.includes(rule.bodyNeedle)) {
+      leadScore += 15;
+      suggestedLeadMagnets.push(rule.magnet);
+      reasons.push(rule.reason);
+    }
   }
   leadScore = Math.min(100, leadScore);
   const urgency = leadScore > 75 ? "high" : leadScore > 40 ? "medium" : "low";

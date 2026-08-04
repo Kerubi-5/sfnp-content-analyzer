@@ -14,8 +14,8 @@ interface AnalysisResult {
     hasCTA: boolean;
 }
 /**
- * Pure-JS/TS Sentiment and Content Analyzer for SFNP.
- * Analyzes copy to find lead generation and internal linking opportunities.
+ * Pure-JS/TS sentiment and content analyzer for SFNP.
+ * Finds lead-generation and internal-linking opportunities from copy.
  */
 declare function analyzeContent(input: AnalyzeInput): AnalysisResult;
 
