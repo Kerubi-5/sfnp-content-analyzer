@@ -1,6 +1,6 @@
 {
   "name": "sfnp-content-analyzer",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Content, sentiment, and lead-generation opportunity analyzer for Sales For Nice People (SFNP)",
   "repository": {
     "type": "git",
